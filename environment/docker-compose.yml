@@ -1,0 +1,136 @@
+version: "3.8"
+networks:
+  ms-network:
+    driver: bridge
+    name: ms-network
+services:
+  #ZOOKEEPER
+  zookeeper:
+    container_name: zookeeper
+    image: "bitnami/zookeeper:3.9.1"
+    networks:
+      - ms-network
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - KAFKA_OPTS=-Dzookeeper.4lw.commands.whitelist=ruok
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "127.0.0.1", "2181"]
+      interval: 10s
+      timeout: 10s
+      retries: 2
+  #KAFKA
+  kafka:
+    container_name: kafka
+    image: "bitnami/kafka:3.6.0"
+    networks:
+      - ms-network
+    ports:
+      - "9093:9093"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092, EXTERNAL://localhost:9093
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bash", "-c", "unset" , "JMX_PORT" ,";" ,"kafka-topics.sh","--zookeeper","zookeeper:2181","--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 2
+  #MONGODB1
+  mongodb1:
+    container_name: mongodb1
+    image: "mongo:5.0.22"
+    ports:
+      - "27017:27017"
+    networks:
+      - ms-network
+    command: ["--replSet", "local-mongodb-replica-set", "--bind_ip_all"]
+    healthcheck:
+      test: ["CMD","mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 2
+  #MONGODB2
+  mongodb2:
+    container_name: mongodb2
+    image: "mongo:5.0.22"
+    expose:
+      - 27018
+    ports:
+      - "27018:27018"
+    networks:
+      - ms-network
+    command: ["--port", "27018", "--replSet", "local-mongodb-replica-set", "--bind_ip_all"]
+    depends_on: [mongodb1]
+    healthcheck:
+      test: ["CMD","mongo","--port","27018", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 2
+  #DEBEZIUM
+  debezium:
+    container_name: debezium
+    image: "quay.io/debezium/connect:2.4.0.Final"
+    networks:
+      - ms-network
+    ports:
+      - "8083:8083"
+    environment:
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      - BOOTSTRAP_SERVERS=kafka:9092
+    links:
+      - "zookeeper:zookeeper"
+      - "kafka:kafka"
+      - "mongodb1:mongodb1"
+      - "mongodb2:mongodb2"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      mongodb1:
+        condition: service_healthy
+      mongodb2:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "http://127.0.0.1:8083/connectors" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+  #KAFKA-UI
+  kafka-ui:
+    container_name: kafka-ui
+    image: "provectuslabs/kafka-ui:latest"
+    platform: linux/amd64
+    networks:
+      - ms-network
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      debezium:
+        condition: service_healthy
+
+
+
+
+
+
+
+

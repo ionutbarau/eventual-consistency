@@ -1,0 +1,27 @@
+{
+  "name": "eventual-consistency-poc-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+    "tasks.max": "1",
+    "mongodb.connection.string": "mongodb://mongodb1:27017,mongodb2:27018/?replicaSet=local-mongodb-replica-set&readPreference=primary&serverSelectionTimeoutMS=5000&connectTimeoutMS=10000",
+    "mongodb.members.auto.discover":"true",
+    "mongodb.name": "mongodb-connector",
+    "mongodb.connection.mode": "replica_set",
+    "topic.prefix": "mongodb",
+    "database.include.list": "customers-db,payments-db",
+    "collection.exclude.list":"customers-db.consumed-events,payments-db.consumed-events",
+    "time.precision.mode": "connect",
+    "value.converter.schemas.enable":"false",
+    "value.converter":"org.apache.kafka.connect.json.JsonConverter",
+    "transforms":"outbox",
+    "transforms.outbox.type":"io.debezium.connector.mongodb.transforms.outbox.MongoEventRouter",
+    "transforms.outbox.collection.expand.json.payload":"true",
+    "transforms.outbox.collection.fields.additional.placement":"type:header:eventType,_id:header:eventId",
+    "transforms.outbox.collection.field.event.key":"aggregateId",
+    "transforms.outbox.route.by.field":"aggregateType",
+    "transforms.outbox.predicate":"isOutboxTable",
+    "predicates":"isOutboxTable",
+    "predicates.isOutboxTable.type":"org.apache.kafka.connect.transforms.predicates.TopicNameMatches",
+    "predicates.isOutboxTable.pattern":".*events"
+  }
+}
