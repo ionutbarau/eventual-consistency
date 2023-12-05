@@ -5,27 +5,28 @@
     <parent>
         <groupId>com.lowheap.poc</groupId>
         <artifactId>eventual-consistency</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>customer-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>customer-service</name>
     <description>Customer service</description>
     <dependencies>
         <dependency>
             <groupId>com.lowheap.poc</groupId>
             <artifactId>common-lib</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.lowheap.poc</groupId>
             <artifactId>customer-service-client</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.lowheap.poc</groupId>
             <artifactId>payment-service-client</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

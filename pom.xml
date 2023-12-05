@@ -10,15 +10,13 @@
     </parent>
     <groupId>com.lowheap.poc</groupId>
     <artifactId>eventual-consistency</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>eventual-consistency</name>
     <description>Eventual consistency POC</description>
     <packaging>pom</packaging>
 
     <properties>
-        <java.version>11</java.version>
         <spring-cloud.version>2022.0.4</spring-cloud.version>
-        <spring-cloud-contract.version>4.0.3</spring-cloud-contract.version>
     </properties>
 
 
