@@ -14,11 +14,13 @@ import org.springframework.kafka.support.DefaultKafkaHeaderMapper;
 import org.springframework.kafka.support.KafkaHeaderMapper;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication(scanBasePackages = {"com.lowheap.poc"})
+@EnableScheduling
 public class PaymentServiceApplication {
 
     @Value("#{'${interestingEvents}'.split(';')}")
