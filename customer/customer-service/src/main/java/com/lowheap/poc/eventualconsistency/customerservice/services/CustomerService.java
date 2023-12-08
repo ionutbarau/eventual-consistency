@@ -10,4 +10,6 @@ public interface CustomerService {
     void rejectRegistration(String customerId, String reason);
 
     Customer findById(String id);
+
+    void checkForRegistrationDeadLock();
 }

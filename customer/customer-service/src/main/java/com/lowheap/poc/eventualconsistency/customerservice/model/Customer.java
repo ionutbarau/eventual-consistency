@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Document(collection= "customers")
 @Data
@@ -22,4 +23,5 @@ public class Customer implements Serializable {
     private String lastName;
     private Card card;
     private RegistrationStatus status;
+    private LocalDateTime createdAt;
 }

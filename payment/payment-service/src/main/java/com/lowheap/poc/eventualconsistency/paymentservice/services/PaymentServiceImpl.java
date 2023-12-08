@@ -1,6 +1,7 @@
 package com.lowheap.poc.eventualconsistency.paymentservice.services;
 
 import com.lowheap.poc.eventualconsistency.lib.common.annotations.CompensationFor;
+import com.lowheap.poc.eventualconsistency.lib.common.annotations.DeadLockCleanupFor;
 import com.lowheap.poc.eventualconsistency.lib.common.annotations.Pivot;
 import com.lowheap.poc.eventualconsistency.lib.common.exceptions.Messages;
 import com.lowheap.poc.eventualconsistency.paymentservice.client.payment.dto.PaymentDto;
@@ -68,7 +69,7 @@ public class PaymentServiceImpl implements PaymentService{
     }
 
     @Override
-    @CompensationFor(sagas = {CUSTOMER_REGISTRATION_SAGA}, compensatableEvents = {CUSTOMER_PENDING_REGISTRATION_EVENT})
+    @CompensationFor(sagas = {CUSTOMER_REGISTRATION_SAGA}, compensableEvents = {CUSTOMER_PENDING_REGISTRATION_EVENT})
     public Payment failCustomerAuthorization(Customer customer, String reason) {
         Payment payment = buildPaymentFromCustomer(customer, false);
         payment = paymentRepository.save(payment);
@@ -80,9 +81,16 @@ public class PaymentServiceImpl implements PaymentService{
         return payment;
     }
 
+    @Override
+    @DeadLockCleanupFor(sagas = {CUSTOMER_REGISTRATION_SAGA})
+    public void revertAuthorizationPayment(Payer payer) {
+        log.info("Deleting authorization fee payments for payer {} if any" , payer.getName());
+        paymentRepository.deleteByPayer(payer);
+    }
+
 
     private Payment buildPaymentFromCustomer(Customer customer, boolean authorized) {
-        String name = new StringBuilder(customer.getFirstName()).append(" ").append(customer.getLastName()).toString();
+        String name = customer.getFirstName() + " " + customer.getLastName();
         Card card = modelMapper.map(customer.getCard(), Card.class);
         Payer payer = Payer.builder().name(name).card(card).build();
         Payee company = Payee.builder().name(companyName).bankAccount(companyBankAccount).bankName(companyBankName).build();
