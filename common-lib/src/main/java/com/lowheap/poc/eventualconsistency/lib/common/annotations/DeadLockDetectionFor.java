@@ -7,6 +7,8 @@ package com.lowheap.poc.eventualconsistency.lib.common.annotations;
  * Date: 07.12.2023.
  * Time: 11:38
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface DeadLockDetectionFor {
 
     String[] sagas() default "";
