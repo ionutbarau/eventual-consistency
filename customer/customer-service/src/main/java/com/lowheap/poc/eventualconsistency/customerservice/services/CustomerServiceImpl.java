@@ -67,7 +67,6 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @CompensationFor(sagas = {CUSTOMER_REGISTRATION_SAGA}, compensableOperations = {"createPendingCustomerRegistration"})
-    @Retriable(sagas = {CUSTOMER_REGISTRATION_SAGA})
     @SagaEnd(sagas = {CUSTOMER_REGISTRATION_SAGA})
     public void rejectRegistration(String customerId, String reason) {
         log.info("Registration failed");
